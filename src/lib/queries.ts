@@ -5,11 +5,12 @@ import type { Product } from "@/lib/catalog";
 const COLUMNS =
   "id,slug,name,category,description,price,sale_price,rating,review_count,image_key,popularity,is_new,stock";
 
-function num(p: Record<string, unknown>): Product {
+function num(row: unknown): Product {
+  const p = row as Product;
   return {
-    ...(p as unknown as Product),
+    ...p,
     price: Number(p.price),
-    sale_price: p.sale_price === null ? null : Number(p.sale_price),
+    sale_price: p.sale_price === null || p.sale_price === undefined ? null : Number(p.sale_price),
     rating: Number(p.rating),
   };
 }
