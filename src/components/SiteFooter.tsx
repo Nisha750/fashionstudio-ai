@@ -1,5 +1,48 @@
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { toast } from "sonner";
 import { categories } from "@/lib/catalog";
+import { supabase } from "@/integrations/supabase/client";
+
+function NewsletterForm() {
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  return (
+    <form
+      className="mt-4 flex border-b border-primary-foreground/40"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        setBusy(true);
+        const { error } = await supabase.from("newsletter_subscribers").insert({ email });
+        setBusy(false);
+        if (error) {
+          toast(
+            error.code === "23505" ? "You're already on the list." : "Could not subscribe",
+            error.code === "23505" ? undefined : { description: error.message },
+          );
+          return;
+        }
+        setEmail("");
+        toast("You're on the list.", { description: "Editorials and early access, nothing else." });
+      }}
+    >
+      <input
+        type="email"
+        required
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Email address"
+        aria-label="Email address"
+        className="w-full bg-transparent py-2 text-sm outline-none placeholder:text-primary-foreground/50"
+      />
+      <button disabled={busy} className="text-xs uppercase tracking-[0.2em] disabled:opacity-50">
+        Join
+      </button>
+    </form>
+  );
+}
+
 
 export function SiteFooter() {
   return (
@@ -51,18 +94,7 @@ export function SiteFooter() {
         <div>
           <p className="eyebrow opacity-70">Newsletter</p>
           <p className="mt-4 text-sm opacity-70">Seasonal editorials, first access to drops.</p>
-          <form
-            className="mt-4 flex border-b border-primary-foreground/40"
-            onSubmit={(e) => e.preventDefault()}
-          >
-            <input
-              type="email"
-              required
-              placeholder="Email address"
-              className="w-full bg-transparent py-2 text-sm outline-none placeholder:text-primary-foreground/50"
-            />
-            <button className="text-xs uppercase tracking-[0.2em]">Join</button>
-          </form>
+          <NewsletterForm />
         </div>
       </div>
       <div className="border-t border-primary-foreground/15 px-5 py-6 text-center text-[11px] uppercase tracking-[0.25em] opacity-60 md:px-10">
