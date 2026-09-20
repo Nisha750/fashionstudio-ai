@@ -38,6 +38,23 @@ export const categoryImages: Record<string, string> = {
 
 export const altImages = [editorial1, editorial2];
 
+// Every dress has its own editorial photograph.
+const dressModules = import.meta.glob("../assets/dresses/*.jpg", {
+  eager: true,
+  query: "?url",
+  import: "default",
+}) as Record<string, string>;
+
+export const dressImages: Record<string, string> = Object.fromEntries(
+  Object.entries(dressModules).map(([path, url]) => [
+    path.split("/").pop()!.replace(".jpg", ""),
+    url,
+  ]),
+);
+
+const dressKeys = Object.keys(dressImages).sort();
+
+
 export const categories = [
   { slug: "women", label: "Women" },
   { slug: "men", label: "Men" },
@@ -56,13 +73,19 @@ export const collections = [
 ];
 
 export function productImage(p: Pick<Product, "image_key">) {
-  return categoryImages[p.image_key] ?? editorial1;
+  return dressImages[p.image_key] ?? categoryImages[p.image_key] ?? editorial1;
 }
 
-export function hoverImage(p: Pick<Product, "slug">) {
+export function hoverImage(p: Pick<Product, "slug" | "image_key">) {
+  if (dressImages[p.image_key]) {
+    const i = dressKeys.indexOf(p.image_key);
+    const next = dressKeys[(i + 1) % dressKeys.length]!;
+    return dressImages[next]!;
+  }
   const n = p.slug.split("-").pop() ?? "1";
   return altImages[Number(n) % altImages.length] ?? editorial1;
 }
+
 
 export function formatPrice(value: number) {
   return new Intl.NumberFormat("en-IN", {
