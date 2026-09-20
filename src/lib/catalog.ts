@@ -38,6 +38,23 @@ export const categoryImages: Record<string, string> = {
 
 export const altImages = [editorial1, editorial2];
 
+// Every dress has its own editorial photograph.
+const dressModules = import.meta.glob("../assets/dresses/*.jpg", {
+  eager: true,
+  query: "?url",
+  import: "default",
+}) as Record<string, string>;
+
+export const dressImages: Record<string, string> = Object.fromEntries(
+  Object.entries(dressModules).map(([path, url]) => [
+    path.split("/").pop()!.replace(".jpg", ""),
+    url,
+  ]),
+);
+
+const dressKeys = Object.keys(dressImages).sort();
+
+
 export const categories = [
   { slug: "women", label: "Women" },
   { slug: "men", label: "Men" },
