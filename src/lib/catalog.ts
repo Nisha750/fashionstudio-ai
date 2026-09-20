@@ -73,13 +73,19 @@ export const collections = [
 ];
 
 export function productImage(p: Pick<Product, "image_key">) {
-  return categoryImages[p.image_key] ?? editorial1;
+  return dressImages[p.image_key] ?? categoryImages[p.image_key] ?? editorial1;
 }
 
-export function hoverImage(p: Pick<Product, "slug">) {
+export function hoverImage(p: Pick<Product, "slug" | "image_key">) {
+  if (dressImages[p.image_key]) {
+    const i = dressKeys.indexOf(p.image_key);
+    const next = dressKeys[(i + 1) % dressKeys.length]!;
+    return dressImages[next]!;
+  }
   const n = p.slug.split("-").pop() ?? "1";
   return altImages[Number(n) % altImages.length] ?? editorial1;
 }
+
 
 export function formatPrice(value: number) {
   return new Intl.NumberFormat("en-IN", {
