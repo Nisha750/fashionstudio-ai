@@ -26,6 +26,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
   const navigate = useNavigate();
 
   if (user) {
@@ -80,15 +81,25 @@ function AuthPage() {
   };
 
   const google = async () => {
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      toast("Google sign-in failed", { description: String(result.error) });
-      return;
+    setGoogleBusy(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: `${window.location.origin}/auth`,
+      });
+      if (result.error) throw result.error;
+      if (result.redirected) return;
+      const { data } = await supabase.auth.getSession();
+      if (data.session) {
+        toast("Signed in with Google");
+        navigate({ to: "/" });
+      }
+    } catch (error) {
+      toast("Google sign-in failed", {
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
+    } finally {
+      setGoogleBusy(false);
     }
-    if (result.redirected) return;
-    navigate({ to: "/" });
   };
 
   return (
@@ -147,9 +158,10 @@ function AuthPage() {
 
       <button
         onClick={google}
+        disabled={googleBusy}
         className="mt-4 w-full border py-4 text-[11px] uppercase tracking-[0.25em] hover:bg-accent"
       >
-        Continue with Google
+        {googleBusy ? "Connecting…" : "Continue with Google"}
       </button>
 
       <button
