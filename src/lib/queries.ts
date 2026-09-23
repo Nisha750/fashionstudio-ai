@@ -1,9 +1,12 @@
 import { queryOptions } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import type { Product } from "@/lib/catalog";
-
-const COLUMNS =
-  "id,slug,name,category,description,price,sale_price,rating,review_count,image_key,popularity,is_new,stock";
+import {
+  getCollection,
+  getProduct,
+  getProductsByIds,
+  getRelatedProducts,
+  searchProducts,
+} from "@/lib/catalog.functions";
 
 function num(row: unknown): Product {
   const p = row as Product;
@@ -25,21 +28,8 @@ export function collectionQuery({ collection, sort = "featured", maxPrice = null
   return queryOptions({
     queryKey: ["collection", collection, sort, maxPrice],
     queryFn: async (): Promise<Product[]> => {
-      let q = supabase.from("products").select(COLUMNS);
-      if (collection === "new-arrivals") q = q.eq("is_new", true);
-      else if (collection === "sale") q = q.not("sale_price", "is", null);
-      else q = q.eq("category", collection);
-
-      if (maxPrice) q = q.lte("price", maxPrice);
-
-      if (sort === "price-asc") q = q.order("price", { ascending: true });
-      else if (sort === "price-desc") q = q.order("price", { ascending: false });
-      else if (sort === "rating") q = q.order("rating", { ascending: false });
-      else q = q.order("popularity", { ascending: false });
-
-      const { data, error } = await q.limit(120);
-      if (error) throw error;
-      return (data ?? []).map(num);
+      const data = await getCollection({ data: { collection, sort: sort as "featured" | "price-asc" | "price-desc" | "rating", maxPrice, limit: 120 } });
+      return data.map(num);
     },
   });
 }
@@ -48,14 +38,8 @@ export function newArrivalsQuery(limit = 8) {
   return queryOptions({
     queryKey: ["new-arrivals", limit],
     queryFn: async (): Promise<Product[]> => {
-      const { data, error } = await supabase
-        .from("products")
-        .select(COLUMNS)
-        .eq("is_new", true)
-        .order("popularity", { ascending: false })
-        .limit(limit);
-      if (error) throw error;
-      return (data ?? []).map(num);
+      const data = await getCollection({ data: { collection: "new-arrivals", sort: "featured", maxPrice: null, limit } });
+      return data.map(num);
     },
   });
 }
@@ -64,13 +48,8 @@ export function trendingQuery(limit = 8) {
   return queryOptions({
     queryKey: ["trending", limit],
     queryFn: async (): Promise<Product[]> => {
-      const { data, error } = await supabase
-        .from("products")
-        .select(COLUMNS)
-        .order("popularity", { ascending: false })
-        .limit(limit);
-      if (error) throw error;
-      return (data ?? []).map(num);
+      const data = await getCollection({ data: { collection: "women", sort: "featured", maxPrice: null, limit } });
+      return data.map(num);
     },
   });
 }
@@ -79,12 +58,7 @@ export function productQuery(slug: string) {
   return queryOptions({
     queryKey: ["product", slug],
     queryFn: async (): Promise<Product | null> => {
-      const { data, error } = await supabase
-        .from("products")
-        .select(COLUMNS)
-        .eq("slug", slug)
-        .maybeSingle();
-      if (error) throw error;
+      const data = await getProduct({ data: { slug } });
       return data ? num(data) : null;
     },
   });
@@ -94,15 +68,8 @@ export function relatedQuery(category: string, slug: string) {
   return queryOptions({
     queryKey: ["related", category, slug],
     queryFn: async (): Promise<Product[]> => {
-      const { data, error } = await supabase
-        .from("products")
-        .select(COLUMNS)
-        .eq("category", category)
-        .neq("slug", slug)
-        .order("popularity", { ascending: false })
-        .limit(4);
-      if (error) throw error;
-      return (data ?? []).map(num);
+      const data = await getRelatedProducts({ data: { category, slug } });
+      return data.map(num);
     },
   });
 }
@@ -112,14 +79,8 @@ export function searchQuery(term: string) {
     queryKey: ["search", term],
     enabled: term.trim().length > 1,
     queryFn: async (): Promise<Product[]> => {
-      const { data, error } = await supabase
-        .from("products")
-        .select(COLUMNS)
-        .ilike("name", `%${term.trim()}%`)
-        .order("popularity", { ascending: false })
-        .limit(40);
-      if (error) throw error;
-      return (data ?? []).map(num);
+      const data = await searchProducts({ data: { term: term.trim() } });
+      return data.map(num);
     },
   });
 }
@@ -129,9 +90,8 @@ export function productsByIdsQuery(ids: string[]) {
     queryKey: ["products-by-ids", [...ids].sort()],
     enabled: ids.length > 0,
     queryFn: async (): Promise<Product[]> => {
-      const { data, error } = await supabase.from("products").select(COLUMNS).in("id", ids);
-      if (error) throw error;
-      return (data ?? []).map(num);
+      const data = await getProductsByIds({ data: { ids } });
+      return data.map(num);
     },
   });
 }
