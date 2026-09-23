@@ -8,6 +8,30 @@ import shoes from "@/assets/shoes.jpg";
 import accessories from "@/assets/accessories.jpg";
 import editorial1 from "@/assets/editorial-1.jpg";
 import editorial2 from "@/assets/editorial-2.jpg";
+import dress01 from "@/assets/dresses/dress-01.jpg";
+import dress02 from "@/assets/dresses/dress-02.jpg";
+import dress03 from "@/assets/dresses/dress-03.jpg";
+import dress04 from "@/assets/dresses/dress-04.jpg";
+import dress05 from "@/assets/dresses/dress-05.jpg";
+import dress06 from "@/assets/dresses/dress-06.jpg";
+import dress07 from "@/assets/dresses/dress-07.jpg";
+import dress08 from "@/assets/dresses/dress-08.jpg";
+import dress09 from "@/assets/dresses/dress-09.jpg";
+import dress10 from "@/assets/dresses/dress-10.jpg";
+import dress11 from "@/assets/dresses/dress-11.jpg";
+import dress12 from "@/assets/dresses/dress-12.jpg";
+import dress13 from "@/assets/dresses/dress-13.jpg";
+import dress14 from "@/assets/dresses/dress-14.jpg";
+import dress15 from "@/assets/dresses/dress-15.jpg";
+import dress16 from "@/assets/dresses/dress-16.jpg";
+import dress17 from "@/assets/dresses/dress-17.jpg";
+import dress18 from "@/assets/dresses/dress-18.jpg";
+import dress19 from "@/assets/dresses/dress-19.jpg";
+import dress20 from "@/assets/dresses/dress-20.jpg";
+import dress21 from "@/assets/dresses/dress-21.jpg";
+import dress22 from "@/assets/dresses/dress-22.jpg";
+import dress23 from "@/assets/dresses/dress-23.jpg";
+import dress24 from "@/assets/dresses/dress-24.jpg";
 
 export type Product = {
   id: string;
@@ -38,19 +62,33 @@ export const categoryImages: Record<string, string> = {
 
 export const altImages = [editorial1, editorial2];
 
-// Every dress has its own editorial photograph.
-const dressModules = import.meta.glob("../assets/dresses/*.jpg", {
-  eager: true,
-  query: "?url",
-  import: "default",
-}) as Record<string, string>;
-
-export const dressImages: Record<string, string> = Object.fromEntries(
-  Object.entries(dressModules).map(([path, url]) => [
-    path.split("/").pop()!.replace(".jpg", ""),
-    url,
-  ]),
-);
+// Explicit imports keep every photograph available in preview and production builds.
+export const dressImages: Record<string, string> = {
+  "dress-01": dress01,
+  "dress-02": dress02,
+  "dress-03": dress03,
+  "dress-04": dress04,
+  "dress-05": dress05,
+  "dress-06": dress06,
+  "dress-07": dress07,
+  "dress-08": dress08,
+  "dress-09": dress09,
+  "dress-10": dress10,
+  "dress-11": dress11,
+  "dress-12": dress12,
+  "dress-13": dress13,
+  "dress-14": dress14,
+  "dress-15": dress15,
+  "dress-16": dress16,
+  "dress-17": dress17,
+  "dress-18": dress18,
+  "dress-19": dress19,
+  "dress-20": dress20,
+  "dress-21": dress21,
+  "dress-22": dress22,
+  "dress-23": dress23,
+  "dress-24": dress24,
+};
 
 const dressKeys = Object.keys(dressImages).sort();
 
@@ -80,7 +118,7 @@ export function hoverImage(p: Pick<Product, "slug" | "image_key">) {
   if (dressImages[p.image_key]) {
     const i = dressKeys.indexOf(p.image_key);
     const next = dressKeys[(i + 1) % dressKeys.length]!;
-    return dressImages[next]!;
+    return dressImages[next] ?? dresses;
   }
   const n = p.slug.split("-").pop() ?? "1";
   return altImages[Number(n) % altImages.length] ?? editorial1;

@@ -39,14 +39,14 @@ function CollectionPage() {
   const { category } = Route.useParams();
   const [sort, setSort] = useState("featured");
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
-  const { data, isPending } = useQuery(collectionQuery({ collection: category, sort, maxPrice }));
+  const { data, isPending, isError, refetch, isFetching } = useQuery(collectionQuery({ collection: category, sort, maxPrice }));
 
   return (
     <div className="mx-auto max-w-[1600px] px-5 py-12 md:px-10">
       <p className="eyebrow">Collection</p>
       <h1 className="display-lg mt-3">{categoryLabel(category)}</h1>
       <p className="mt-4 max-w-lg text-sm text-muted-foreground">
-        {data?.length ?? 0} pieces, cut in monochrome and finished in the VÉRA studio.
+        {isPending ? "Loading the collection…" : `${data?.length ?? 0} pieces, each with sizes and pricing ready to shop.`}
       </p>
 
       <div className="mt-10 flex flex-wrap items-center gap-3 border-y py-4">
@@ -76,6 +76,20 @@ function CollectionPage() {
 
       <div className="mt-12">
         {isPending && <ProductGridSkeleton count={12} />}
+        {isError && (
+          <div className="border-y py-20 text-center">
+            <p className="font-display text-3xl">The collection did not load.</p>
+            <p className="mt-3 text-sm text-muted-foreground">Please try again to reconnect to the VÉRA catalogue.</p>
+            <button
+              type="button"
+              disabled={isFetching}
+              onClick={() => refetch()}
+              className="mt-6 border px-8 py-3 text-[11px] uppercase tracking-[0.2em] disabled:opacity-50"
+            >
+              {isFetching ? "Loading…" : "Try again"}
+            </button>
+          </div>
+        )}
         {data && data.length === 0 && (
           <p className="py-24 text-center text-sm text-muted-foreground">
             Nothing in this filter yet.{" "}
