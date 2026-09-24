@@ -62,17 +62,6 @@ export function ProductCard({ product }: { product: Product }) {
         <Heart className={`size-4 ${saved ? "fill-foreground" : ""}`} />
       </Button>
 
-      <Button
-        type="button"
-        onClick={() => {
-          addToCart(product.id);
-          toast("Added to bag", { description: product.name });
-        }}
-        className="absolute inset-x-0 bottom-[22%] mx-3 hidden h-11 translate-y-3 rounded-none text-[11px] uppercase tracking-[0.25em] opacity-0 transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 md:inline-flex"
-      >
-        Add to Bag
-      </Button>
-
       <div className="mt-4 transition-transform duration-500 group-hover:-translate-y-0.5">
         <div className="flex items-start justify-between gap-4">
           <Link to="/product/$slug" params={{ slug: product.slug }} className="text-sm">
@@ -110,7 +99,7 @@ export function ProductCard({ product }: { product: Product }) {
             addToCart(product.id, "M");
             toast("Added to bag", { description: `${product.name} · Size M` });
           }}
-          className="mt-3 h-11 w-full rounded-none text-[10px] uppercase tracking-[0.2em] md:hidden"
+          className="mt-3 h-11 w-full rounded-none text-[10px] uppercase tracking-[0.2em]"
         >
           {product.stock > 0 ? "Add to Bag · Size M" : "Unavailable"}
         </Button>
